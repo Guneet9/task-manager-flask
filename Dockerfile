@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 
 # Set working directory
-WORKDIR /app
+WORKDIR .
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
