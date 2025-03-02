@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Tasks - Task Manager</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+<style>
+      .task-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .task-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+      }
+.task-item.completed {
+        background-color: #f8f9fa;
+      }
+      .task-item.completed .task-title {
+        text-decoration: line-through;
+        color: #6c757d;
+      }
+      .task-title {
+        flex-grow: 1;
+        margin-left: 10px;
+      }
+      .task-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+.alert {
+        display: none;
+        margin-top: 20px;
+      }
+      .loader {
+        display: none;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .edit-form {
+        display: none;
+        margin: 10px 0;
+        width: 100%;
+      }
+</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="task-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2>My Tasks</h2>
+          <div>
+            <span id="usernameDisplay" class="me-3"></span>
+            <button id="logoutBtn" class="btn btn-outline-danger btn-sm">
+              Logout
+            </button>
+          </div>
+        </div>
+<div id="errorAlert" class="alert alert-danger" role="alert"></div>
+        <div id="successAlert" class="alert alert-success" role="alert"></div>
+
+        <form id="addTaskForm" class="mb-4">
+          <div class="input-group">
+            <input
+              type="text"
+              id="newTaskTitle"
+              class="form-control"
+              placeholder="Add a new task..."
+              required
+            />
+            <button class="btn btn-primary" type="submit">Add Task
+</button>
+          </div>
+        </form>
+
+        <div id="loader" class="loader">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div id="taskList" class="mt-3">
+          <!-- Tasks will be loaded here -->
+        </div>
+<div id="emptyState" class="text-center mt-4 d-none">
+          <p class="text-muted">No tasks found. Add a task to get started!</p>
+        </div>
+      </div>
+    </div>
+<!-- Edit Task Modal -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+<form id="editTaskForm">
+              <input type="hidden" id="editTaskId">
+              <div class="mb-3">
+                <label for="editTaskTitle" class="form-label">Task Title</label>
+                <input type="text" class="form-control" id="editTaskTitle" required>
+              </div>
+            </form>
+          </div>
+<div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is logged in
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+          return;
+        }
+
+// Display username
+        const username = localStorage.getItem("username");
+        document.getElementById("usernameDisplay").textContent = username;
+
+        const taskList = document.getElementById("taskList");
+        const emptyState = document.getElementById("emptyState");
+        const errorAlert = document.getElementById("errorAlert");
+        const successAlert = document.getElementById("successAlert");
+        const loader = document.getElementById("loader");
+// Initialize Bootstrap modal
+        const editTaskModal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+
+        // Load tasks
+        loadTasks();
+
+        // Add task form handling
+        const addTaskForm = document.getElementById("addTaskForm");
+        addTaskForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+const titleInput = document.getElementById("newTaskTitle");
+          const title = titleInput.value.trim();
+
+          if (!title) return;
+
+          // Reset alerts
+          resetAlerts();
+
+          // Show loader
+          loader.style.display = "block";
+// Add task
+          fetch("/api/tasks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": token,
+            },
+            body: JSON.stringify({ title }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              loader.style.display = "none";
+if (data.task) {
+                // Add new task to the list
+                addTaskToDOM(data.task);
+
+                // Clear input
+                titleInput.value = "";
+
+                // Show success message
+                showAlert(successAlert, "Task added successfully!");
+
+                // Hide empty state if visible
+                emptyState.classList.add("d-none");
+              } else {
+                showAlert(errorAlert, data.message || "Failed to add task");
+}
+            })
+            .catch((error) => {
+              loader.style.display = "none";
+              console.error("Error:", error);
+              showAlert(errorAlert, "An error occurred. Please try again.");
+            });
+        });
+// Edit task form handling
+        document.getElementById("saveEditBtn").addEventListener("click", function() {
+          const taskId = document.getElementById("editTaskId").value;
+          const title = document.getElementById("editTaskTitle").value.trim();
+
+          if (!title) return;
+
+          updateTaskTitle(taskId, title);
+          editTaskModal.hide();
+        });
+// Logout button handling
+        document
+          .getElementById("logoutBtn")
+          .addEventListener("click", function () {
+            localStorage.removeItem("token");
+            localStorage.removeItem("username");
+            window.location.href = "/login";
+          });
+function loadTasks() {
+          // Show loader
+          loader.style.display = "block";
+
+          // Hide any alerts
+          resetAlerts();
+
+          // Clear task list
+          taskList.innerHTML = "";
+// Fetch tasks
+          fetch("/api/tasks", {
+            method: "GET",
+            headers: {
+              "x-access-token": token,
+            },
+          })
+            .then((response) => {
+              if (response.status === 401) {
+                // Token expired or invalid
+                localStorage.removeItem("token");
+                localStorage.removeItem("username");
+                window.location.href = "/login";
+                throw new Error("Unauthorized");
+
+}
+              return response.json();
+            })
+            .then((data) => {
+              loader.style.display = "none";
+
+              if (data.tasks && Array.isArray(data.tasks)) {
+                if (data.tasks.length === 0) {
+                  emptyState.classList.remove("d-none");
+                } else {
+                  emptyState.classList.add("d-none");
+                  data.tasks.forEach((task) => addTaskToDOM(task));
+                }
+              } else {
+showAlert(errorAlert, "Failed to load tasks");
+              }
+            })
+            .catch((error) => {
+              if (error.message !== "Unauthorized") {
+                loader.style.display = "none";
+                console.error("Error:", error);
+                showAlert(errorAlert, "An error occurred while loading tasks.");
+              }
+            });
+        }
+function addTaskToDOM(task) {
+          const taskItem = document.createElement("div");
+          taskItem.classList.add("task-item");
+          taskItem.id = `task-${task.id}`;
+          if (task.completed) {
+            taskItem.classList.add("completed");
+          }
+taskItem.innerHTML = `
+            <input type="checkbox" class="task-checkbox" data-id="${
+              task.id
+            }" ${task.completed ? "checked" : ""}>
+            <span class="task-title">${escapeHtml(task.title)}</span>
+            <div class="task-actions">
+                <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${
+                  task.id
+                }" data-title="${escapeHtml(task.title)}">
+                    <i class="fas fa-edit"></i>
+</button>
+                <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${
+                  task.id
+                }">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+          `;
+taskList.appendChild(taskItem);
+
+          // Add event listener for checkbox
+          const checkbox = taskItem.querySelector(".task-checkbox");
+          checkbox.addEventListener("change", function () {
+            const taskId = this.getAttribute("data-id");
+            const completed = this.checked;
+
+            updateTaskStatus(taskId, completed);
+          });
+// Add event listener for edit button
+          const editBtn = taskItem.querySelector(".edit-btn");
+          editBtn.addEventListener("click", function () {
+            const taskId = this.getAttribute("data-id");
+            const taskTitle = this.getAttribute("data-title");
+
+            // Set values in the edit modal
+            document.getElementById("editTaskId").value = taskId;
+            document.getElementById("editTaskTitle").value = taskTitle;
+// Show the edit modal
+            editTaskModal.show();
+          });
+
+// Add event listener for delete button
+          const deleteBtn = taskItem.querySelector(".delete-btn");
+          deleteBtn.addEventListener("click", function () {
+            const taskId = this.getAttribute("data-id");
+            deleteTask(taskId);
+          });
+        }
+function updateTaskStatus(taskId, completed) {
+          fetch(`/api/tasks/${taskId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": token,
+            },
+            body: JSON.stringify({ completed }),
+          })
+.then((response) => response.json())
+            .then((data) => {
+              if (data.task) {
+                const taskItem = document.getElementById(`task-${taskId}`);
+                if (completed) {
+                  taskItem.classList.add("completed");
+                } else {
+                  taskItem.classList.remove("completed");
+                }
+
+                showAlert(successAlert, "Task updated successfully!");
+              } else {
+showAlert(errorAlert, data.message || "Failed to update task");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showAlert(errorAlert, "An error occurred. Please try again.");
+            });
+        }
+function updateTaskTitle(taskId, title) {
+          fetch(`/api/tasks/${taskId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "x-access-token": token,
+            },
+            body: JSON.stringify({ title }),
+          })
+            .then((response) => response.json())
+.then((data) => {
+              if (data.task) {
+                // Update the task title in the DOM
+                const taskItem = document.getElementById(`task-${taskId}`);
+                const titleSpan = taskItem.querySelector(".task-title");
+                titleSpan.textContent = data.task.title;
+
+                // Update the data-title attribute on the edit button
+                const editBtn = taskItem.querySelector(".edit-btn");
+editBtn.setAttribute("data-title", data.task.title);
+
+                showAlert(successAlert, "Task updated successfully!");
+              } else {
+                showAlert(errorAlert, data.message || "Failed to update task");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showAlert(errorAlert, "An error occurred. Please try again.");
+            });
+        }
+function deleteTask(taskId) {
+          if (!confirm("Are you sure you want to delete this task?")) {
+            return;
+          }
+fetch(`/api/tasks/${taskId}`, {
+            method: "DELETE",
+            headers: {
+              "x-access-token": token,
+            },
+          })
+            .then((response) => response.json())
+
+.then((data) => {
+              if (data.message === "Task deleted!") {
+                // Remove task from DOM
+                const taskItem = document.getElementById(`task-${taskId}`);
+                taskItem.remove();
+
+                showAlert(successAlert, "Task deleted successfully!");
+
+                // Show empty state if no tasks
+                if (taskList.children.length === 0) {
+                  emptyState.classList.remove("d-none");
+                }
+} else {
+                showAlert(errorAlert, data.message || "Failed to delete task");
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              showAlert(errorAlert, "An error occurred. Please try again.");
+            });
+        }
+function showAlert(alertEl, message) {
+          alertEl.textContent = message;
+          alertEl.style.display = "block";
+
+          // Auto-hide after 3 seconds
+          setTimeout(() => {
+            alertEl.style.display = "none";
+          }, 3000);
+        }
+
+        function resetAlerts() {
+          errorAlert.style.display = "none";
+          successAlert.style.display = "none";
+        }
+function escapeHtml(unsafe) {
+          return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+      });
+    </script>
+  </body>
+</html>

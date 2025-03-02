@@ -1,0 +1,39 @@
+2025-03-02 16:17:29,690 - task_manager - INFO - Starting Task Manager application on port 8019
+2025-03-02 16:17:29,724 - task_manager - INFO - Creating database tables if they don't exist
+2025-03-02 16:17:29,999 - task_manager - INFO - Starting Flask development server on port 8019
+2025-03-02 16:17:31,069 - task_manager - INFO - Starting Task Manager application on port 8019
+2025-03-02 16:17:31,092 - task_manager - INFO - Creating database tables if they don't exist
+2025-03-02 16:17:31,100 - task_manager - INFO - Starting Flask development server on port 8019
+2025-03-02 16:17:55,900 - task_manager - INFO - Index page accessed
+2025-03-02 16:17:56,528 - task_manager - WARNING - 404 error: /favicon.ico
+2025-03-02 16:18:04,343 - task_manager - INFO - Login page accessed
+2025-03-02 16:18:15,282 - task_manager - WARNING - Login failed: Invalid credentials for username guneet.kaur@digitap.ai
+2025-03-02 16:18:20,731 - task_manager - INFO - Register page accessed
+2025-03-02 16:18:32,349 - task_manager - INFO - Register page accessed
+2025-03-02 16:21:56,590 - task_manager - INFO - Register page accessed
+2025-03-02 16:22:25,499 - task_manager - INFO - Register page accessed
+2025-03-02 16:22:53,412 - task_manager - INFO - Login page accessed
+2025-03-02 16:23:00,663 - task_manager - WARNING - Login failed: Invalid credentials for username guneet
+2025-03-02 16:23:55,154 - task_manager - INFO - Starting Task Manager application on port 8019
+2025-03-02 16:23:55,175 - task_manager - INFO - Creating database tables if they don't exist
+2025-03-02 16:23:55,181 - task_manager - INFO - Starting Flask development server on port 8019
+2025-03-02 16:23:55,978 - task_manager - INFO - Starting Task Manager application on port 8019
+2025-03-02 16:23:55,999 - task_manager - INFO - Creating database tables if they don't exist
+2025-03-02 16:23:56,007 - task_manager - INFO - Starting Flask development server on port 8019
+2025-03-02 16:24:00,462 - task_manager - INFO - Login page accessed
+2025-03-02 16:24:03,628 - task_manager - INFO - Register page accessed
+2025-03-02 16:24:20,973 - task_manager - INFO - User guneet registered successfully
+2025-03-02 16:24:23,010 - task_manager - INFO - Login page accessed
+2025-03-02 16:24:34,856 - task_manager - INFO - User guneet logged in successfully
+2025-03-02 16:24:35,874 - task_manager - INFO - Tasks page accessed
+2025-03-02 16:24:36,583 - task_manager - INFO - User guneet retrieved 0 tasks
+2025-03-02 16:24:49,027 - task_manager - INFO - User guneet created task: "watch cricket"
+2025-03-02 16:25:02,017 - task_manager - INFO - User guneet created task: "get haircut"
+2025-03-02 16:25:15,697 - task_manager - INFO - User guneet updated task ID: 1
+2025-03-02 16:25:27,719 - task_manager - INFO - User guneet updated task ID: 2
+2025-03-02 16:25:34,270 - task_manager - INFO - User guneet deleted task ID: 2
+2025-03-02 16:26:00,808 - task_manager - INFO - User guneet created task: "play tt"
+2025-03-02 16:26:08,960 - task_manager - INFO - User guneet deleted task ID: 2
+2025-03-02 16:27:54,866 - task_manager - INFO - Starting Task Manager application on port 8019
+2025-03-02 16:27:54,898 - task_manager - INFO - Creating database tables if they don't exist
+2025-03-02 16:27:54,912 - task_manager - INFO - Starting Flask development server on port 8019
