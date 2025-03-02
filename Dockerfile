@@ -17,4 +17,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 # Install Python dependencies
 COPY requirements.txt .
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:8019 app:app"]
+CMD ["python", "app.py"]
